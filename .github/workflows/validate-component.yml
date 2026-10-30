@@ -1,0 +1,42 @@
+name: Validate component contract
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  metadata:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate component metadata and README
+        run: |
+          python - <<'PY'
+          import tomllib
+          from pathlib import Path
+
+          required = {
+              "name",
+              "schema_version",
+              "responsibility",
+              "integration_repository",
+              "canonical_branch",
+              "status",
+              "license",
+          }
+          metadata = tomllib.loads(Path("COMPONENT.toml").read_text())
+          missing = sorted(required - metadata.keys())
+          if missing:
+              raise SystemExit(f"COMPONENT.toml is missing: {', '.join(missing)}")
+          if metadata["canonical_branch"] != "main":
+              raise SystemExit("canonical_branch must be main")
+          if metadata["status"] not in {"scaffold", "prototype", "implemented", "verified", "released"}:
+              raise SystemExit(f"unsupported component status: {metadata['status']}")
+          if not Path("README.md").is_file():
+              raise SystemExit("README.md is required")
+          print(f"validated {metadata['name']} ({metadata['status']})")
+          PY
