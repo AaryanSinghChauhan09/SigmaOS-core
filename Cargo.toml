@@ -1,0 +1,9 @@
+[package]
+name = "core"
+version = "0.1.0"
+edition = "2021"
+description = "SigmaOS SigmaOS-core component"
+license = "MIT"
+repository = "https://github.com/AaryanSinghChauhan09/SigmaOS-core"
+
+[dependencies]
