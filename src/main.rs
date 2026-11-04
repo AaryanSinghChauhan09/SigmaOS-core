@@ -1,28 +1,26 @@
-use std::env;
-use log::{info, warn, error, debug};
+//! SigmaOS-core executable entry point
+
 use anyhow::Result;
-//! SigmaOS-core - SigmaOS Component
-//!
-//! This component is part of the SigmaOS operating system.
+use log::info;
+use sigmaos_core::{Component, Config, CoreComponent};
 
-fn main() -> Result<()> { {
-    println!("SigmaOS SigmaOS-core - Under Development");
-    println!("Version: 0.1.0");
-    println!("Status: Initial implementation");
-}
+fn main() -> Result<()> {
+    env_logger::init();
+    info!("Starting SigmaOS-core daemon...");
+
+    let config = Config::default();
+    let mut component = CoreComponent::new(config);
+
+    info!("Initializing component: {}", component.name());
+    component.initialize().map_err(|e| anyhow::anyhow!(e))?;
+
+    info!("Starting component: {} (v{})", component.name(), component.version());
+    component.start().map_err(|e| anyhow::anyhow!(e))?;
+
+    info!("Component running with status: {:?}", component.status());
+
+    component.stop().map_err(|e| anyhow::anyhow!(e))?;
+    info!("Component stopped cleanly.");
+
     Ok(())
-
-#[derive(Debug, Clone)]
-struct Config {
-    verbose: bool,
-    dry_run: bool,
-}
-
-impl Config {
-    fn from_env() -> Self {
-        Config {
-            verbose: env::var("VERBOSE").is_ok(),
-            dry_run: env::var("DRY_RUN").is_ok(),
-        }
-    }
 }
