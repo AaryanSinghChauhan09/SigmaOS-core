@@ -80,29 +80,42 @@ impl Component for CoreComponent {
     }
 
     fn start(&mut self) -> Result<()> {
-        if let Some(ref mut svc) = self.service {
+        self.with_service(|svc| {
             svc.start()?;
             self.status = ComponentStatus::Running;
             Ok(())
-        } else {
-            let err = "Service not initialized".to_string();
-            self.status = ComponentStatus::Error(err.clone());
-            Err(ComponentError::InitError(err))
-        }
+        })
     }
 
     fn stop(&mut self) -> Result<()> {
-        if let Some(ref mut svc) = self.service {
+        self.with_service(|svc| {
             svc.stop()?;
             self.status = ComponentStatus::Stopped;
             Ok(())
-        } else {
-            let err = "Service not initialized".to_string();
-            self.status = ComponentStatus::Error(err.clone());
-            Err(ComponentError::InitError(err))
+        })
+    }
+}
+
+impl CoreComponent {
+    /// Helper method to execute operations on the service with error handling
+    /// Follows DRY principle by avoiding duplicate error handling code
+    fn with_service<F>(&mut self, operation: F) -> Result<()>
+    where
+        F: FnOnce(&mut Service) -> Result<()>,
+    {
+        match self.service.as_mut() {
+            Some(svc) => operation(svc),
+            None => {
+                let err = "Service not initialized".to_string();
+                self.status = ComponentStatus::Error(err.clone());
+                Err(ComponentError::InitError(err))
+            }
         }
     }
 
+}
+
+impl Component for CoreComponent {
     fn status(&self) -> ComponentStatus {
         self.status.clone()
     }
