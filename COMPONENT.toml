@@ -3,5 +3,6 @@ schema_version = 1
 responsibility = "boot, kernel boundary, init, ABI contracts, and base system"
 integration_repository = "https://github.com/AaryanSinghChauhan09/SigmaOS"
 canonical_branch = "main"
-status = "scaffold"
+stability = "beta"
+status = "Implemented"
 license = "GPL-3.0-or-later"
